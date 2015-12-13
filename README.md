@@ -2,7 +2,7 @@
 
 Hot is a library for rendering hot golang templates. This means with `hot` you won't need to recompile your application everytime you edit your templates.Hot watches for file changes in your templates directory and reloads everytime you make changes to your files.
 
-hot renders go templates usin `html/template` package.
+hot renders go templates using `html/template` package.
 
 # Installation
 
@@ -16,28 +16,28 @@ Just pass the configuration object to `hot.New`
 package main
 
 import (
-	"fmt"
-	"os"
+    "os"
 
-	"github.com/gernest/hot"
+    "github.com/gernest/hot"
 )
 
 func main() {
-	config := &hot.Config{
-		Watch:          true,
-		BaseName:       "hot",
-		Dir:            "fixtures",
-		FilesExtension: []string{".tpl", ".html", ".tmpl"},
-	}
-	
-	tpl,err:=hot.New(&config)
-	if err!+nil{
-		panic(err)
-	}
-	
-	// execute the template named "hello.tpl
-    tpl.Execute(os.Stdout,"hello.tpl",nil)	
+    config := &hot.Config{
+        Watch:          true,
+        BaseName:       "hot",
+        Dir:            "fixtures",
+        FilesExtension: []string{".tpl", ".html", ".tmpl"},
+    }
+
+    tpl, err := hot.New(config)
+    if err != nil {
+        panic(err)
+    }
+
+    // execute the template named "hello.tpl
+    tpl.Execute(os.Stdout, "hello.tpl", nil)
 }
+
 ```
 
 Note that the fixtures directory should exist and there is a template file `hello.tpl` in it , `hot` will be watching any changes to the files inside this directory.
