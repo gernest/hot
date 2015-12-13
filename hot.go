@@ -18,6 +18,7 @@ type Config struct {
 	Watch          bool
 	BaseName       string
 	Dir            string
+	Funcs          template.FuncMap
 	FilesExtension []string
 }
 
@@ -28,8 +29,12 @@ type Template struct {
 }
 
 func New(cfg *Config) (*Template, error) {
+	tmpl := template.New(cfg.BaseName)
+	if cfg.Funcs != nil {
+		tmpl = template.New(cfg.BaseName).Funcs(cfg.Funcs)
+	}
 	tpl := &Template{
-		tpl: template.New(cfg.BaseName),
+		tpl: tmpl,
 		cfg: cfg,
 		Out: os.Stdout,
 	}
@@ -71,6 +76,9 @@ func (t *Template) Init() {
 func (t *Template) Reload() {
 	tpl := *t.tpl
 	t.tpl = template.New(t.cfg.BaseName)
+	if t.cfg.Funcs != nil {
+		t.tpl = template.New(t.cfg.BaseName).Funcs(t.cfg.Funcs)
+	}
 	err := t.Load(t.cfg.Dir)
 	if err != nil {
 		fmt.Fprintln(t.Out, err.Error())
