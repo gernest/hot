@@ -58,12 +58,12 @@ func (t *Template) Init() {
 			}
 			watcher.Add(t.cfg.Dir)
 			fmt.Fprintln(t.Out, "start watching ", t.cfg.Dir)
-		END:
 			for {
 				select {
 				case <-c:
 					watcher.Close()
-					break END
+					fmt.Println("shutting down hot templates... done")
+					os.Exit(0)
 				case evt := <-watcher.Events:
 					fmt.Fprintf(t.Out, "%s:  reloading... \n", evt.String())
 					t.Reload()
