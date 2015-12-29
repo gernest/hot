@@ -56,8 +56,21 @@ func (t *Template) Init() {
 				fmt.Fprintln(t.Out, err)
 				return
 			}
-			watcher.Add(t.cfg.Dir)
-			fmt.Fprintln(t.Out, "start watching ", t.cfg.Dir)
+			err = filepath.Walk(t.cfg.Dir, func(fPath string, info os.FileInfo, ferr error) error {
+				if ferr != nil {
+					return ferr
+				}
+				if info.IsDir() {
+					fmt.Fprintln(t.Out, "start watching ", fPath)
+					return watcher.Add(fPath)
+				}
+				return nil
+			})
+			if err != nil {
+				fmt.Fprintln(t.Out, err)
+				return
+			}
+
 			for {
 				select {
 				case <-c:
