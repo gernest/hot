@@ -53,6 +53,8 @@ BaseName| Is the root template name, e.g "base", "hot" etc
 Dir| The directory in which you keep your templates
 FilesExtension| Supported file extensions. These are the ones parsed in the template.
 Funcs| (optional) A map of names to functions that can be used inside your templates. ([more information](https://golang.org/pkg/text/template/#FuncMap))
+LeftDelim| left template delimiter e.g {{
+RightDelim| rignt template delimiter e.g }}
 
 
 

@@ -19,6 +19,8 @@ type Config struct {
 	BaseName       string
 	Dir            string
 	Funcs          template.FuncMap
+	LeftDelim      string
+	RightDelin     string
 	FilesExtension []string
 }
 
@@ -29,9 +31,17 @@ type Template struct {
 }
 
 func New(cfg *Config) (*Template, error) {
-	tmpl := template.New(cfg.BaseName)
+	leftDelim := "{{"
+	rightDelim := "}}"
+	if cfg.LeftDelim != "" {
+		leftDelim = cfg.LeftDelim
+	}
+	if rightDelim != "" {
+		rightDelim = cfg.RightDelin
+	}
+	tmpl := template.New(cfg.BaseName).Delims(leftDelim, rightDelim)
 	if cfg.Funcs != nil {
-		tmpl = template.New(cfg.BaseName).Funcs(cfg.Funcs)
+		tmpl = template.New(cfg.BaseName).Funcs(cfg.Funcs).Delims(leftDelim, rightDelim)
 	}
 	tpl := &Template{
 		tpl: tmpl,
