@@ -36,8 +36,8 @@ func New(cfg *Config) (*Template, error) {
 	if cfg.LeftDelim != "" {
 		leftDelim = cfg.LeftDelim
 	}
-	if cfg.RightDelin != "" {
-		rightDelim = cfg.RightDelin
+	if cfg.RightDelim != "" {
+		rightDelim = cfg.RightDelim
 	}
 	tmpl := template.New(cfg.BaseName).Delims(leftDelim, rightDelim)
 	if cfg.Funcs != nil {
