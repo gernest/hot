@@ -20,7 +20,7 @@ type Config struct {
 	Dir            string
 	Funcs          template.FuncMap
 	LeftDelim      string
-	RightDelin     string
+	RightDelim     string
 	FilesExtension []string
 }
 
