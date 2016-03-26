@@ -110,7 +110,7 @@ func (t *Template) Reload() {
 }
 
 func (t *Template) Load(dir string) error {
-	fmt.Fprintln(t.Out, "loading ", dir)
+	fmt.Fprintln(t.Out, "loading...", dir)
 	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
