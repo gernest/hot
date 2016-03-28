@@ -1,8 +1,8 @@
 # Hot [![Build Status](https://travis-ci.org/gernest/hot.svg)](https://travis-ci.org/gernest/hot)
 
-Hot is a library for rendering hot Golang templates. This means with `hot` you won't need to reload your application every time you edit your templates.Hot watches for file changes in your templates directory and reloads every time you make changes to your files.
+Hot is a library for rendering hot golang templates. This means with `hot` you won't need to reload your application everytime you edit your templates.Hot watches for file changes in your templates directory and reloads everytime you make changes to your files.
 
-Hot renders go templates using `html/template` package.
+hot renders go templates using `html/template` package.
 
 # Installation
 
