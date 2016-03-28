@@ -49,6 +49,13 @@ func New(cfg *Config) (*Template, error) {
 		Out: os.Stdout,
 	}
 	tpl.Init()
+
+	if cfg.Dir == ""{
+		cfg.Dir, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+	}
 	err := tpl.Load(cfg.Dir)
 	if err != nil {
 		return nil, err
