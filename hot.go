@@ -89,7 +89,7 @@ func (t *Template) Init() {
 				select {
 				case <-c:
 					watcher.Close()
-					fmt.Println("shutting down hot templates... done")
+					fmt.Fprintf(t.Out,"shutting down hot templates... done")
 					os.Exit(0)
 				case evt := <-watcher.Events:
 					fmt.Fprintf(t.Out, "%s:  reloading... \n", evt.String())
