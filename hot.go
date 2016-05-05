@@ -22,6 +22,7 @@ type Config struct {
 	LeftDelim      string
 	RightDelim     string
 	FilesExtension []string
+	Log            io.Writer
 }
 
 type Template struct {
@@ -47,6 +48,9 @@ func New(cfg *Config) (*Template, error) {
 		tpl: tmpl,
 		cfg: cfg,
 		Out: os.Stdout,
+	}
+	if cfg.Log != nil {
+		tpl.Out = cfg.Log
 	}
 	tpl.Init()
 	err := tpl.Load(cfg.Dir)
