@@ -60,27 +60,27 @@ func (t *Template) Init() {
 	if t.cfg.Watch {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			fmt.Fprintln(t.Out, err)
+			return
+		}
+		err = filepath.Walk(t.cfg.Dir, func(fPath string, info os.FileInfo, ferr error) error {
+			if ferr != nil {
+				return ferr
+			}
+			if info.IsDir() {
+				fmt.Fprintln(t.Out, "start watching ", fPath)
+				return watcher.Add(fPath)
+			}
+			return nil
+		})
+		if err != nil {
+			watcher.Close()
+			fmt.Fprintln(t.Out, err)
+			return
+		}
 		go func() {
-			watcher, err := fsnotify.NewWatcher()
-			if err != nil {
-				fmt.Fprintln(t.Out, err)
-				return
-			}
-			err = filepath.Walk(t.cfg.Dir, func(fPath string, info os.FileInfo, ferr error) error {
-				if ferr != nil {
-					return ferr
-				}
-				if info.IsDir() {
-					fmt.Fprintln(t.Out, "start watching ", fPath)
-					return watcher.Add(fPath)
-				}
-				return nil
-			})
-			if err != nil {
-				fmt.Fprintln(t.Out, err)
-				return
-			}
-
 			for {
 				select {
 				case <-c:
