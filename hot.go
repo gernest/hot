@@ -22,6 +22,7 @@ type Config struct {
 	LeftDelim      string
 	RightDelim     string
 	FilesExtension []string
+	Log            io.Writer
 }
 
 type Template struct {
@@ -48,6 +49,9 @@ func New(cfg *Config) (*Template, error) {
 		cfg: cfg,
 		Out: os.Stdout,
 	}
+	if cfg.Log != nil {
+		tpl.Out = cfg.Log
+	}
 	tpl.Init()
 	err := tpl.Load(cfg.Dir)
 	if err != nil {
@@ -60,32 +64,32 @@ func (t *Template) Init() {
 	if t.cfg.Watch {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			fmt.Fprintln(t.Out, err)
+			return
+		}
+		err = filepath.Walk(t.cfg.Dir, func(fPath string, info os.FileInfo, ferr error) error {
+			if ferr != nil {
+				return ferr
+			}
+			if info.IsDir() {
+				fmt.Fprintln(t.Out, "start watching ", fPath)
+				return watcher.Add(fPath)
+			}
+			return nil
+		})
+		if err != nil {
+			watcher.Close()
+			fmt.Fprintln(t.Out, err)
+			return
+		}
 		go func() {
-			watcher, err := fsnotify.NewWatcher()
-			if err != nil {
-				fmt.Fprintln(t.Out, err)
-				return
-			}
-			err = filepath.Walk(t.cfg.Dir, func(fPath string, info os.FileInfo, ferr error) error {
-				if ferr != nil {
-					return ferr
-				}
-				if info.IsDir() {
-					fmt.Fprintln(t.Out, "start watching ", fPath)
-					return watcher.Add(fPath)
-				}
-				return nil
-			})
-			if err != nil {
-				fmt.Fprintln(t.Out, err)
-				return
-			}
-
 			for {
 				select {
 				case <-c:
 					watcher.Close()
-					fmt.Println("shutting down hot templates... done")
+					fmt.Fprintf(t.Out,"shutting down hot templates... done")
 					os.Exit(0)
 				case evt := <-watcher.Events:
 					fmt.Fprintf(t.Out, "%s:  reloading... \n", evt.String())

@@ -13,10 +13,10 @@ func testHot(conf *Config, t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func(w *sync.WaitGroup) {
+		defer w.Done()
 		tpl, err := New(conf)
 		if err != nil {
 			t.Error(err)
-			w.Done()
 			return
 		}
 		body := "hello {{.Name}}"
@@ -24,7 +24,6 @@ func testHot(conf *Config, t *testing.T) {
 		err = ioutil.WriteFile(name, []byte(body), 0600)
 		if err != nil {
 			t.Error(err)
-			w.Done()
 			return
 		}
 		time.Sleep(time.Second)
@@ -35,14 +34,12 @@ func testHot(conf *Config, t *testing.T) {
 		err = tpl.Execute(buf, "hello.tpl", data)
 		if err != nil {
 			t.Error(err)
-			w.Done()
 			return
 		}
 		message := "hello gernest"
 		if buf.String() != message {
-			t.Errorf("expcted %s got %s", message, buf.String())
+			t.Errorf("expected %s got %s", message, buf.String())
 		}
-		w.Done()
 	}(&wg)
 	wg.Wait()
 }
