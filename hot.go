@@ -32,14 +32,7 @@ type Template struct {
 }
 
 func New(cfg *Config) (*Template, error) {
-	leftDelim := "{{"
-	rightDelim := "}}"
-	if cfg.LeftDelim != "" {
-		leftDelim = cfg.LeftDelim
-	}
-	if cfg.RightDelim != "" {
-		rightDelim = cfg.RightDelim
-	}
+	leftDelim, rightDelim := getDelims(cfg)
 	tmpl := template.New(cfg.BaseName).Delims(leftDelim, rightDelim)
 	if cfg.Funcs != nil {
 		tmpl = template.New(cfg.BaseName).Funcs(cfg.Funcs).Delims(leftDelim, rightDelim)
@@ -89,7 +82,7 @@ func (t *Template) Init() {
 				select {
 				case <-c:
 					watcher.Close()
-					fmt.Fprintf(t.Out,"shutting down hot templates... done")
+					fmt.Fprintf(t.Out, "shutting down hot templates... done")
 					os.Exit(0)
 				case evt := <-watcher.Events:
 					fmt.Fprintf(t.Out, "%s:  reloading... \n", evt.String())
@@ -102,9 +95,10 @@ func (t *Template) Init() {
 
 func (t *Template) Reload() {
 	tpl := *t.tpl
-	t.tpl = template.New(t.cfg.BaseName)
+	leftDelim, rightDelim := getDelims(t.cfg)
+	t.tpl = template.New(t.cfg.BaseName).Delims(leftDelim, rightDelim)
 	if t.cfg.Funcs != nil {
-		t.tpl = template.New(t.cfg.BaseName).Funcs(t.cfg.Funcs)
+		t.tpl = template.New(t.cfg.BaseName).Funcs(t.cfg.Funcs).Delims(leftDelim, rightDelim)
 	}
 	err := t.Load(t.cfg.Dir)
 	if err != nil {
@@ -161,4 +155,18 @@ func (t *Template) Load(dir string) error {
 
 func (t *Template) Execute(w io.Writer, name string, ctx interface{}) error {
 	return t.tpl.ExecuteTemplate(w, name, ctx)
+}
+
+func getDelims(cfg *Config) (leftDelim string, rightDelim string) {
+	if cfg.LeftDelim != "" {
+		leftDelim = cfg.LeftDelim
+	} else {
+		leftDelim = "{{"
+	}
+	if cfg.RightDelim != "" {
+		rightDelim = cfg.RightDelim
+	} else {
+		rightDelim = "}}"
+	}
+	return
 }
