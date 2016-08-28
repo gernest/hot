@@ -6,10 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"gopkg.in/fsnotify.v1"
 )
@@ -26,9 +24,11 @@ type Config struct {
 }
 
 type Template struct {
-	tpl *template.Template
-	cfg *Config
-	Out io.Writer
+	tpl          *template.Template
+	cfg          *Config
+	watcher      *fsnotify.Watcher
+	closeChannel chan bool
+	Out          io.Writer
 }
 
 func New(cfg *Config) (*Template, error) {
@@ -55,13 +55,14 @@ func New(cfg *Config) (*Template, error) {
 
 func (t *Template) Init() {
 	if t.cfg.Watch {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
 		watcher, err := fsnotify.NewWatcher()
+		t.watcher = watcher
 		if err != nil {
 			fmt.Fprintln(t.Out, err)
 			return
 		}
+		t.closeChannel = make(chan bool, 1)
+
 		err = filepath.Walk(t.cfg.Dir, func(fPath string, info os.FileInfo, ferr error) error {
 			if ferr != nil {
 				return ferr
@@ -80,17 +81,21 @@ func (t *Template) Init() {
 		go func() {
 			for {
 				select {
-				case <-c:
-					watcher.Close()
-					fmt.Fprintf(t.Out, "shutting down hot templates... done")
-					os.Exit(0)
+				case <-t.closeChannel:
+					return
 				case evt := <-watcher.Events:
 					fmt.Fprintf(t.Out, "%s:  reloading... \n", evt.String())
 					t.Reload()
 				}
+
 			}
 		}()
 	}
+}
+
+func (t *Template) Close() {
+	t.closeChannel <- true
+	t.watcher.Close()
 }
 
 func (t *Template) Reload() {
