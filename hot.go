@@ -63,16 +63,8 @@ func (t *Template) Init() {
 		}
 		t.closeChannel = make(chan bool, 1)
 
-		err = filepath.Walk(t.cfg.Dir, func(fPath string, info os.FileInfo, ferr error) error {
-			if ferr != nil {
-				return ferr
-			}
-			if info.IsDir() {
-				fmt.Fprintln(t.Out, "start watching ", fPath)
-				return watcher.Add(fPath)
-			}
-			return nil
-		})
+		fmt.Fprintln(t.Out, "start watching ", t.cfg.Dir)
+		err = watcher.Add(t.cfg.Dir)
 		if err != nil {
 			watcher.Close()
 			fmt.Fprintln(t.Out, err)
